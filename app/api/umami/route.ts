@@ -21,7 +21,6 @@ export const GET = async (req: NextRequest) => {
     const stats = await getWebsiteStats(domain);
     const countries = await getWebsiteMetrics(domain, "country");
     const events = await getWebsiteMetrics(domain, "event");
-
     const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
 
     return NextResponse.json(

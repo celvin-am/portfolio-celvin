@@ -7,9 +7,10 @@ export const UMAMI_ACCOUNT = {
     sessions: "/stats",
   },
   parameters: {
-    startAt: 1672531200000, // 1 Jan 2023
+    // 120 hari = 4 bulan terakhir
+    startAt: Date.now() - (120 * 24 * 60 * 60 * 1000), 
     endAt: Date.now(),      
-    unit: "day",
+    unit: "month", 
     timezone: "Asia/Jakarta",
   },
   is_active: true,

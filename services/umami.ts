@@ -47,7 +47,7 @@ export const getWebsiteMetrics = async (domain: string, type: string) => {
       headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: Date.now(), type },
     });
-    return response.data; // Array [{x: '...', y: jumlah}]
+    return response.data;
   } catch (error) { return []; }
 };
 
@@ -91,8 +91,6 @@ export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
       const st = await getWebsiteStats(w.domain);
       const countries = await getWebsiteMetrics(w.domain, "country");
       const events = await getWebsiteMetrics(w.domain, "event");
-      
-      // Total event adalah jumlah semua y di dalam array metrics event
       const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
 
       return {
