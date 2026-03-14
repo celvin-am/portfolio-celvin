@@ -1,59 +1,51 @@
 import { type NextRequest, NextResponse } from "next/server";
-import {
-  getPageViewsByDataRange,
-  getWebsiteStats,
-  getWebsiteMetrics,
-  getAllWebsiteData,
-} from "@/services/umami";
+import { getAllWebsiteData, getPageViewsByDataRange, getWebsiteStats, getWebsiteMetrics } from "@/services/umami";
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (req: NextRequest) => {
   try {
     const domain = req.nextUrl.searchParams.get("domain");
-
-    if (domain === "all" || !domain) {
-      const combinedData = await getAllWebsiteData();
-      return NextResponse.json(combinedData, { status: 200 });
+    if (!domain || domain === "all") {
+      return NextResponse.json(await getAllWebsiteData());
     }
 
-    const pageViews = await getPageViewsByDataRange(domain);
-    const stats = await getWebsiteStats(domain);
-    const countries = await getWebsiteMetrics(domain, "country");
-    const events = await getWebsiteMetrics(domain, "event");
-    const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
+    const [pv, st, co, ev] = await Promise.all([
+      getPageViewsByDataRange(domain),
+      getWebsiteStats(domain),
+      getWebsiteMetrics(domain, "country"),
+      getWebsiteMetrics(domain, "event")
+    ]);
 
-    const pvs = [];
-    const ss = [];
+    const pvs: any[] = [];
+    const sss: any[] = [];
+    const now = new Date();
+
+    // Buat 4 batang bulan (Des, Jan, Feb, Mar)
     for (let i = 3; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(1);
-        d.setMonth(d.getMonth() - i);
-        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
-        const itemKey = monthStr.substring(0, 7);
-        
-        const foundPv = pageViews.data.pageviews?.find((p: any) => p.x.startsWith(itemKey));
-        const foundSs = pageViews.data.sessions?.find((s: any) => s.x.startsWith(itemKey));
-        
-        pvs.push({ x: monthStr, y: foundPv?.y || 0 });
-        ss.push({ x: monthStr, y: foundSs?.y || 0 });
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+      const prefix = key.substring(0, 7);
+
+      const valPv = pv.data.pageviews?.find((p: any) => p.x.startsWith(prefix))?.y || 0;
+      const valSs = pv.data.sessions?.find((s: any) => s.x.startsWith(prefix))?.y || 0;
+
+      pvs.push({ x: key, y: valPv });
+      sss.push({ x: key, y: valSs });
     }
 
-    return NextResponse.json(
-      {
-        pageviews: pvs,
-        sessions: ss,
-        websiteStats: {
-          pageviews: { value: stats.data?.pageviews?.value || stats.data?.pageviews || 0 },
-          visitors: { value: stats.data?.visitors?.value || stats.data?.visitors || 0 },
-          visits: { value: stats.data?.visits?.value || stats.data?.visits || 0 },
-          countries: { value: countries.length || 0 },
-          events: { value: totalEvents || 0 },
-        },
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
-  }
+    return NextResponse.json({
+      pageviews: pvs,
+      sessions: sss,
+      websiteStats: {
+        pageviews: { value: getValue(st.data?.pageviews) },
+        visitors: { value: getValue(st.data?.visitors) },
+        visits: { value: getValue(st.data?.visits) },
+        countries: { value: (co || []).length },
+        events: { value: (ev || []).reduce((acc: number, cur: any) => acc + (cur.y || 0), 0) }
+      }
+    });
+  } catch (e) { return NextResponse.json({ error: "API Error" }, { status: 500 }); }
 };
+
+const getValue = (obj: any) => (typeof obj === 'number' ? obj : obj?.value || 0);

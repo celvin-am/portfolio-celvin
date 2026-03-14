@@ -4,21 +4,17 @@ import { UmamiResponse } from "@/common/types/umami";
 
 const { api_key, endpoint, base_url, parameters, websites } = UMAMI_ACCOUNT;
 
-const getWebsiteIdByDomain = (domain: string) => {
-  const found = websites.find((w) => w.domain === domain);
-  return found?.website_id;
-};
+const getWebsiteIdByDomain = (domain: string) => 
+  websites.find((w) => w.domain === domain)?.website_id;
 
 const getValue = (obj: any): number => {
   if (!obj) return 0;
   if (typeof obj === 'number') return obj;
-  if (typeof obj.value === 'number') return obj.value;
-  return 0;
+  return obj.value ?? 0;
 };
 
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return { status: 404, data: { pageviews: [], sessions: [] } };
   try {
     const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.page_views}`, {
       headers: { "x-umami-api-key": api_key || "" },
@@ -30,7 +26,6 @@ export const getPageViewsByDataRange = async (domain: string) => {
 
 export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return { status: 404, data: {} };
   try {
     const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.sessions}`, {
       headers: { "x-umami-api-key": api_key || "" },
@@ -55,74 +50,57 @@ const mergeData = (allResults: any[]): UmamiResponse => {
   const combined: UmamiResponse = {
     pageviews: [],
     sessions: [],
-    websiteStats: {
-      pageviews: { value: 0 },
-      visitors: { value: 0 },
-      visits: { value: 0 },
-      countries: { value: 0 },
-      events: { value: 0 },
-    },
+    websiteStats: { pageviews: { value: 0 }, visitors: { value: 0 }, visits: { value: 0 }, countries: { value: 0 }, events: { value: 0 } },
   };
 
-  // FIX LOGIC BULAN: Loop mundur 4 bulan
+  // 1. Generate placeholder 4 bulan (Des, Jan, Feb, Mar)
+  const now = new Date();
   for (let i = 3; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(1); // Set ke tanggal 1 biar nggak error pas akhir bulan
-    d.setMonth(d.getMonth() - i);
-    
-    // Format YYYY-MM-01 00:00:00
-    const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
-    
-    combined.pageviews.push({ x: monthStr, y: 0 });
-    combined.sessions.push({ x: monthStr, y: 0 });
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+    combined.pageviews.push({ x: key, y: 0 });
+    combined.sessions.push({ x: key, y: 0 });
   }
 
-  allResults.forEach((result) => {
-    const stats = result?.websiteStats;
-    combined.websiteStats.pageviews.value += getValue(stats?.pageviews);
-    combined.websiteStats.visitors.value += getValue(stats?.visitors);
-    combined.websiteStats.visits.value += getValue(stats?.visits);
-    combined.websiteStats.countries.value += result?.countriesCount || 0;
-    combined.websiteStats.events.value += result?.eventsCount || 0;
+  allResults.forEach((res) => {
+    // Akumulasi Stats (Page views, Visitors, dll)
+    combined.websiteStats.pageviews.value += getValue(res.websiteStats?.pageviews);
+    combined.websiteStats.visitors.value += getValue(res.websiteStats?.visitors);
+    combined.websiteStats.visits.value += getValue(res.websiteStats?.visits);
+    combined.websiteStats.countries.value += res.countriesCount || 0;
+    combined.websiteStats.events.value += res.eventsCount || 0;
 
-    if (result.pageviews && Array.isArray(result.pageviews)) {
-      result.pageviews.forEach((item: any) => {
-        // Bandingkan hanya Tahun dan Bulan (YYYY-MM)
-        const itemKey = item.x.substring(0, 7);
-        const existing = combined.pageviews.find((p) => p.x.startsWith(itemKey));
-        if (existing) existing.y += item.y;
-      });
-    }
-
-    if (result.sessions && Array.isArray(result.sessions)) {
-      result.sessions.forEach((item: any) => {
-        const itemKey = item.x.substring(0, 7);
-        const existing = combined.sessions.find((p) => p.x.startsWith(itemKey));
-        if (existing) existing.y += item.y;
-      });
-    }
+    // Mapping Pageviews ke keranjang bulan yang tepat
+    res.pageviews?.forEach((item: any) => {
+      const target = combined.pageviews.find(p => p.x.substring(0, 7) === item.x.substring(0, 7));
+      if (target) target.y += item.y;
+    });
+    // Mapping Sessions
+    res.sessions?.forEach((item: any) => {
+      const target = combined.sessions.find(s => s.x.substring(0, 7) === item.x.substring(0, 7));
+      if (target) target.y += item.y;
+    });
   });
 
   return combined;
 };
 
 export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
-  const results = await Promise.all(
-    websites.map(async (w) => {
-      const pv = await getPageViewsByDataRange(w.domain);
-      const st = await getWebsiteStats(w.domain);
-      const countries = await getWebsiteMetrics(w.domain, "country");
-      const events = await getWebsiteMetrics(w.domain, "event");
-      const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
-
-      return {
-        pageviews: pv?.data?.pageviews || [],
-        sessions: pv?.data?.sessions || [],
-        websiteStats: st?.data || {},
-        countriesCount: countries.length,
-        eventsCount: totalEvents
-      };
-    })
-  );
+  const results = await Promise.all(websites.map(async (w) => {
+    const [pv, st, co, ev] = await Promise.all([
+      getPageViewsByDataRange(w.domain),
+      getWebsiteStats(w.domain),
+      getWebsiteMetrics(w.domain, "country"),
+      getWebsiteMetrics(w.domain, "event")
+    ]);
+    const totalEvents = (ev || []).reduce((acc: number, cur: any) => acc + (cur.y || 0), 0);
+    return {
+      pageviews: pv.data.pageviews || [],
+      sessions: pv.data.sessions || [],
+      websiteStats: st.data || {},
+      countriesCount: (co || []).length,
+      eventsCount: totalEvents
+    };
+  }));
   return mergeData(results);
 };
