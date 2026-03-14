@@ -1,6 +1,6 @@
 import axios from "axios";
 import { UMAMI_ACCOUNT } from "@/common/constants/umami";
-import { UmamiResponse, UmamiDataPoint } from "@/common/types/umami";
+import { UmamiResponse } from "@/common/types/umami";
 
 const { api_key, endpoint, base_url, parameters, websites } = UMAMI_ACCOUNT;
 
@@ -64,11 +64,15 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     },
   };
 
-  // Logic Placeholder 4 Bulan agar grafik tidak melebar
+  // FIX LOGIC BULAN: Loop mundur 4 bulan
   for (let i = 3; i >= 0; i--) {
     const d = new Date();
+    d.setDate(1); // Set ke tanggal 1 biar nggak error pas akhir bulan
     d.setMonth(d.getMonth() - i);
+    
+    // Format YYYY-MM-01 00:00:00
     const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+    
     combined.pageviews.push({ x: monthStr, y: 0 });
     combined.sessions.push({ x: monthStr, y: 0 });
   }
@@ -83,14 +87,17 @@ const mergeData = (allResults: any[]): UmamiResponse => {
 
     if (result.pageviews && Array.isArray(result.pageviews)) {
       result.pageviews.forEach((item: any) => {
-        const existing = combined.pageviews.find((p) => p.x.substring(0, 7) === item.x.substring(0, 7));
+        // Bandingkan hanya Tahun dan Bulan (YYYY-MM)
+        const itemKey = item.x.substring(0, 7);
+        const existing = combined.pageviews.find((p) => p.x.startsWith(itemKey));
         if (existing) existing.y += item.y;
       });
     }
 
     if (result.sessions && Array.isArray(result.sessions)) {
       result.sessions.forEach((item: any) => {
-        const existing = combined.sessions.find((p) => p.x.substring(0, 7) === item.x.substring(0, 7));
+        const itemKey = item.x.substring(0, 7);
+        const existing = combined.sessions.find((p) => p.x.startsWith(itemKey));
         if (existing) existing.y += item.y;
       });
     }

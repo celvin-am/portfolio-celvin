@@ -25,14 +25,15 @@ export const GET = async (req: NextRequest) => {
 
     const pvs = [];
     const ss = [];
-    // Menghasilkan 4 bulan terakhir secara dinamis
     for (let i = 3; i >= 0; i--) {
         const d = new Date();
+        d.setDate(1);
         d.setMonth(d.getMonth() - i);
         const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+        const itemKey = monthStr.substring(0, 7);
         
-        const foundPv = pageViews.data.pageviews?.find((p: any) => p.x.substring(0, 7) === monthStr.substring(0, 7));
-        const foundSs = pageViews.data.sessions?.find((s: any) => s.x.substring(0, 7) === monthStr.substring(0, 7));
+        const foundPv = pageViews.data.pageviews?.find((p: any) => p.x.startsWith(itemKey));
+        const foundSs = pageViews.data.sessions?.find((s: any) => s.x.startsWith(itemKey));
         
         pvs.push({ x: monthStr, y: foundPv?.y || 0 });
         ss.push({ x: monthStr, y: foundSs?.y || 0 });
