@@ -2,21 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import {
   getPageViewsByDataRange,
   getWebsiteStats,
+  getWebsiteMetrics,
   getAllWebsiteData,
 } from "@/services/umami";
 
 export const dynamic = 'force-dynamic';
-
-const formatIndividualStats = (stats: any) => {
-  const getValue = (obj: any) => (typeof obj === 'number' ? obj : obj?.value || 0);
-  return {
-    pageviews: { value: getValue(stats?.pageviews) },
-    visitors: { value: getValue(stats?.visitors) },
-    visits: { value: getValue(stats?.visits) },
-    countries: { value: getValue(stats?.countries) || getValue(stats?.regions) || 0 },
-    events: { value: getValue(stats?.events) || getValue(stats?.actions) || 0 },
-  };
-};
 
 export const GET = async (req: NextRequest) => {
   try {
@@ -29,12 +19,19 @@ export const GET = async (req: NextRequest) => {
 
     const pageViews = await getPageViewsByDataRange(domain);
     const stats = await getWebsiteStats(domain);
+    const countries = await getWebsiteMetrics(domain, "country");
 
     return NextResponse.json(
       {
         pageviews: pageViews.data.pageviews || [],
         sessions: pageViews.data.sessions || [],
-        websiteStats: formatIndividualStats(stats.data),
+        websiteStats: {
+          pageviews: { value: stats.data?.pageviews?.value || stats.data?.pageviews || 0 },
+          visitors: { value: stats.data?.visitors?.value || stats.data?.visitors || 0 },
+          visits: { value: stats.data?.visits?.value || stats.data?.visits || 0 },
+          countries: { value: countries.length || 0 }, // Ambil jumlah array negara
+          events: { value: stats.data?.events?.value || 0 },
+        },
       },
       { status: 200 }
     );

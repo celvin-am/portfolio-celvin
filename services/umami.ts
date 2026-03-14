@@ -19,31 +19,37 @@ const getValue = (obj: any): number => {
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   if (!website_id) return { status: 404, data: { pageviews: [], sessions: [] } };
-
   try {
     const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.page_views}`, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { ...parameters, endAt: Date.now() },
     });
     return { status: response.status, data: response.data };
-  } catch (error) {
-    return { status: 500, data: { pageviews: [], sessions: [] } };
-  }
+  } catch (error) { return { status: 500, data: { pageviews: [], sessions: [] } }; }
 };
 
 export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   if (!website_id) return { status: 404, data: {} };
-
   try {
     const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.sessions}`, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: Date.now() },
     });
     return { status: response.status, data: response.data };
-  } catch (error) {
-    return { status: 500, data: {} };
-  }
+  } catch (error) { return { status: 500, data: {} }; }
+};
+
+// --- FUNGSI BARU BUAT NEGARA ---
+export const getWebsiteMetrics = async (domain: string, type: string = "country") => {
+  const website_id = getWebsiteIdByDomain(domain);
+  try {
+    const response = await axios.get(`${base_url}/websites/${website_id}/metrics`, {
+      headers: { "x-umami-api-key": api_key || "" },
+      params: { startAt: parameters.startAt, endAt: Date.now(), type },
+    });
+    return response.data; // Ini array [{x: 'ID', y: 1}, ...]
+  } catch (error) { return []; }
 };
 
 const mergeData = (allResults: any[]): UmamiResponse => {
@@ -64,9 +70,8 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     combined.websiteStats.pageviews.value += getValue(stats?.pageviews);
     combined.websiteStats.visitors.value += getValue(stats?.visitors);
     combined.websiteStats.visits.value += getValue(stats?.visits);
-    // Fallback buat Countries dan Events
-    combined.websiteStats.countries.value += getValue(stats?.countries) || getValue(stats?.regions) || 0;
-    combined.websiteStats.events.value += getValue(stats?.events) || getValue(stats?.actions) || 0;
+    combined.websiteStats.countries.value += result?.countriesCount || 0;
+    combined.websiteStats.events.value += getValue(stats?.events);
 
     if (result.pageviews && Array.isArray(result.pageviews)) {
       result.pageviews.forEach((item: any) => {
@@ -77,7 +82,6 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     }
   });
 
-  combined.pageviews.sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime());
   return combined;
 };
 
@@ -86,10 +90,12 @@ export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
     websites.map(async (w) => {
       const pv = await getPageViewsByDataRange(w.domain);
       const st = await getWebsiteStats(w.domain);
+      const countries = await getWebsiteMetrics(w.domain, "country");
       return {
         pageviews: pv?.data?.pageviews || [],
         sessions: pv?.data?.sessions || [],
         websiteStats: st?.data || {},
+        countriesCount: countries.length // Jumlah negara unik
       };
     })
   );
