@@ -9,60 +9,44 @@ const getWebsiteIdByDomain = (domain: string) => {
   return found?.website_id;
 };
 
+// Fungsi Helper untuk format response agar TypeScript gak marah
+const formatResponse = (status: number, data: any, error: string | null = null) => ({
+  status,
+  data,
+  error
+});
+
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  
-  // 🔍 ALAT PELACAK UMAMI
-  console.log(`🕵️ Umami API Key:`, api_key ? "TERBACA ✅" : "KOSONG/TIDAK TERBACA ❌");
-  console.log(`🕵️ Umami Website ID (${domain}):`, website_id ? "TERBACA ✅" : "KOSONG/TIDAK TERBACA ❌");
+  if (!website_id) return formatResponse(404, {}, `Website not found for ${domain}`);
 
-  if (!website_id) {
-    return {
-      status: 404,
-      data: {},
-      error: `Website not found for domain "${domain}"`,
-    };
-  }
-
-  const url = `${base_url}/${website_id}${endpoint.page_views}`;
+  const url = `${base_url}/websites/${website_id}${endpoint.page_views}`;
 
   try {
     const response = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        "x-umami-api-key": api_key || "",
-      },
+      headers: { "x-umami-api-key": api_key || "" },
       params: parameters,
     });
-
-    return { status: response.status, data: response.data };
+    return formatResponse(response.status, response.data);
   } catch (error: any) {
-    console.error("❌ Umami Page Views Error:", error?.response?.data || error.message);
-    return { status: error?.response?.status || 500, data: {}, error: error?.message || "Unknown error" };
+    return formatResponse(error?.response?.status || 500, {}, error.message);
   }
 };
 
 export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) {
-    return { status: 404, data: {}, error: `Website not found for domain "${domain}"` };
-  }
+  if (!website_id) return formatResponse(404, {}, `Website not found for ${domain}`);
 
-  const url = `${base_url}/${website_id}${endpoint.sessions}`;
+  const url = `${base_url}/websites/${website_id}${endpoint.sessions}`;
 
   try {
     const response = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        "x-umami-api-key": api_key || "",
-      },
+      headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: parameters.endAt },
     });
-
-    return { status: response.status, data: response.data };
+    return formatResponse(response.status, response.data);
   } catch (error: any) {
-    console.error("❌ Umami Sessions Error:", error?.response?.data || error.message);
-    return { status: error?.response?.status || 500, data: {}, error: error?.message || "Unknown error" };
+    return formatResponse(error?.response?.status || 500, {}, error.message);
   }
 };
 
@@ -80,18 +64,17 @@ const mergeData = (allResults: any[]): UmamiResponse => {
   };
 
   allResults.forEach((result) => {
-    // 🛡️ PELINDUNG ANTI-CRASH: Pakai ?. dan || 0
     combined.websiteStats.pageviews.value += result?.websiteStats?.pageviews?.value || 0;
     combined.websiteStats.visitors.value += result?.websiteStats?.visitors?.value || 0;
     combined.websiteStats.visits.value += result?.websiteStats?.visits?.value || 0;
     combined.websiteStats.events.value += result?.websiteStats?.events?.value || 0;
     combined.websiteStats.countries.value = Math.max(
       combined.websiteStats.countries.value,
-      result?.websiteStats?.countries?.value || 0,
+      result?.websiteStats?.countries?.value || 0
     );
 
     const mergeChart = (target: UmamiDataPoint[], source: UmamiDataPoint[] = []) => {
-      if (!Array.isArray(source)) return; // Jaga-jaga kalau source bukan array
+      if (!Array.isArray(source)) return;
       source.forEach((item) => {
         const existing = target.find((p) => p.x === item.x);
         if (existing) existing.y += item.y;
@@ -110,8 +93,6 @@ const mergeData = (allResults: any[]): UmamiResponse => {
 };
 
 export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
-  const { websites } = UMAMI_ACCOUNT;
-
   const results = await Promise.all(
     websites.map(async (w) => {
       const pv = await getPageViewsByDataRange(w.domain);
@@ -119,9 +100,9 @@ export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
       return {
         pageviews: pv?.data?.pageviews || [],
         sessions: pv?.data?.sessions || [],
-        websiteStats: st?.data || {}, // Fallback ke object kosong kalau gagal
+        websiteStats: st?.data || {},
       };
-    }),
+    })
   );
 
   return mergeData(results);

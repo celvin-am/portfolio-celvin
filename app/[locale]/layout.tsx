@@ -23,7 +23,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
+      ? "https://celvinandra.my.id"
       : process.env.DOMAIN || "",
   ),
   description: METADATA.description,
@@ -66,7 +66,7 @@ const RootLayout = async ({
         <Script
           defer
           src="https://cloud.umami.is/script.js"
-          data-website-id="91c868c5-2a89-4a1d-b292-56c40ea30137"
+          data-website-id="957f8e50-cea6-43bb-87b0-7b58328c4497"
         />
       </head>
       <body className={inter.className}>
