@@ -7,15 +7,14 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-// Helper untuk format stat individu agar sama dengan format 'All'
 const formatIndividualStats = (stats: any) => {
   const getValue = (obj: any) => (typeof obj === 'number' ? obj : obj?.value || 0);
   return {
     pageviews: { value: getValue(stats?.pageviews) },
     visitors: { value: getValue(stats?.visitors) },
     visits: { value: getValue(stats?.visits) },
-    countries: { value: getValue(stats?.countries) },
-    events: { value: getValue(stats?.events) },
+    countries: { value: getValue(stats?.countries) || getValue(stats?.regions) || 0 },
+    events: { value: getValue(stats?.events) || getValue(stats?.actions) || 0 },
   };
 };
 

@@ -10,7 +10,7 @@ export const UMAMI_ACCOUNT = {
     startAt: 1672531200000, // 1 Jan 2023
     endAt: Date.now(),      
     unit: "day",
-    timezone: "UTC",
+    timezone: "Asia/Jakarta",
   },
   is_active: true,
   websites: [

@@ -9,7 +9,6 @@ const getWebsiteIdByDomain = (domain: string) => {
   return found?.website_id;
 };
 
-// Fungsi sakti buat ambil angka gimanapun formatnya
 const getValue = (obj: any): number => {
   if (!obj) return 0;
   if (typeof obj === 'number') return obj;
@@ -21,9 +20,8 @@ export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   if (!website_id) return { status: 404, data: { pageviews: [], sessions: [] } };
 
-  const url = `${base_url}/websites/${website_id}${endpoint.page_views}`;
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.page_views}`, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { ...parameters, endAt: Date.now() },
     });
@@ -37,9 +35,8 @@ export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   if (!website_id) return { status: 404, data: {} };
 
-  const url = `${base_url}/websites/${website_id}${endpoint.sessions}`;
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get(`${base_url}/websites/${website_id}${endpoint.sessions}`, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: Date.now() },
     });
@@ -64,15 +61,13 @@ const mergeData = (allResults: any[]): UmamiResponse => {
 
   allResults.forEach((result) => {
     const stats = result?.websiteStats;
-    
-    // Update kotak-kotak atas dengan getValue agar tidak 0
     combined.websiteStats.pageviews.value += getValue(stats?.pageviews);
     combined.websiteStats.visitors.value += getValue(stats?.visitors);
     combined.websiteStats.visits.value += getValue(stats?.visits);
-    combined.websiteStats.events.value += getValue(stats?.events);
-    combined.websiteStats.countries.value += getValue(stats?.countries);
+    // Fallback buat Countries dan Events
+    combined.websiteStats.countries.value += getValue(stats?.countries) || getValue(stats?.regions) || 0;
+    combined.websiteStats.events.value += getValue(stats?.events) || getValue(stats?.actions) || 0;
 
-    // Gabungkan Chart
     if (result.pageviews && Array.isArray(result.pageviews)) {
       result.pageviews.forEach((item: any) => {
         const existing = combined.pageviews.find((p) => p.x === item.x);
