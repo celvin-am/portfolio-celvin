@@ -9,43 +9,43 @@ const getWebsiteIdByDomain = (domain: string) => {
   return found?.website_id;
 };
 
-const formatResponse = (status: number, data: any, error: string | null = null) => ({
-  status,
-  data,
-  error
-});
+// Fungsi sakti buat ambil angka gimanapun formatnya
+const getValue = (obj: any): number => {
+  if (!obj) return 0;
+  if (typeof obj === 'number') return obj;
+  if (typeof obj.value === 'number') return obj.value;
+  return 0;
+};
 
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return formatResponse(404, {}, "Website not found");
+  if (!website_id) return { status: 404, data: { pageviews: [], sessions: [] } };
 
   const url = `${base_url}/websites/${website_id}${endpoint.page_views}`;
-
   try {
     const response = await axios.get(url, {
       headers: { "x-umami-api-key": api_key || "" },
-      params: parameters,
+      params: { ...parameters, endAt: Date.now() },
     });
-    return formatResponse(response.status, response.data);
-  } catch (error: any) {
-    return formatResponse(error?.response?.status || 500, {}, error.message);
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    return { status: 500, data: { pageviews: [], sessions: [] } };
   }
 };
 
 export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return formatResponse(404, {}, "Website not found");
+  if (!website_id) return { status: 404, data: {} };
 
   const url = `${base_url}/websites/${website_id}${endpoint.sessions}`;
-
   try {
     const response = await axios.get(url, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: Date.now() },
     });
-    return formatResponse(response.status, response.data);
-  } catch (error: any) {
-    return formatResponse(error?.response?.status || 500, {}, error.message);
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    return { status: 500, data: {} };
   }
 };
 
@@ -63,14 +63,18 @@ const mergeData = (allResults: any[]): UmamiResponse => {
   };
 
   allResults.forEach((result) => {
-    // Umami API mengembalikan stats dalam bentuk { pageviews: { value: 10 }, ... }
-    // Pastikan mapping-nya benar sesuai data API
-    combined.websiteStats.pageviews.value += result?.websiteStats?.pageviews?.value || 0;
-    combined.websiteStats.visitors.value += result?.websiteStats?.visitors?.value || 0;
-    combined.websiteStats.visits.value += result?.websiteStats?.visits?.value || 0;
+    const stats = result?.websiteStats;
     
-    if (result.pageviews) {
-      result.pageviews.forEach((item: UmamiDataPoint) => {
+    // Update kotak-kotak atas dengan getValue agar tidak 0
+    combined.websiteStats.pageviews.value += getValue(stats?.pageviews);
+    combined.websiteStats.visitors.value += getValue(stats?.visitors);
+    combined.websiteStats.visits.value += getValue(stats?.visits);
+    combined.websiteStats.events.value += getValue(stats?.events);
+    combined.websiteStats.countries.value += getValue(stats?.countries);
+
+    // Gabungkan Chart
+    if (result.pageviews && Array.isArray(result.pageviews)) {
+      result.pageviews.forEach((item: any) => {
         const existing = combined.pageviews.find((p) => p.x === item.x);
         if (existing) existing.y += item.y;
         else combined.pageviews.push({ ...item });
@@ -78,6 +82,7 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     }
   });
 
+  combined.pageviews.sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime());
   return combined;
 };
 
@@ -93,6 +98,5 @@ export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
       };
     })
   );
-
   return mergeData(results);
 };

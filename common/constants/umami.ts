@@ -1,6 +1,5 @@
 export const UMAMI_ACCOUNT = {
   username: "Celvin Andra Maulana",
-  // Gunakan hardcode dulu untuk memastikan koneksi tembus
   api_key: "api_0LZpZ8A2ITOJ6KWxEd3IFVvGxCZZfQTV", 
   base_url: "https://api.umami.is/v1",
   endpoint: {
@@ -9,7 +8,7 @@ export const UMAMI_ACCOUNT = {
   },
   parameters: {
     startAt: 1672531200000, // 1 Jan 2023
-    endAt: Date.now(),      // Sampai detik ini (Dinamis)
+    endAt: Date.now(),      
     unit: "day",
     timezone: "UTC",
   },
