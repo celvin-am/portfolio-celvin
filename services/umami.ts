@@ -40,15 +40,14 @@ export const getWebsiteStats = async (domain: string) => {
   } catch (error) { return { status: 500, data: {} }; }
 };
 
-// --- FUNGSI BARU BUAT NEGARA ---
-export const getWebsiteMetrics = async (domain: string, type: string = "country") => {
+export const getWebsiteMetrics = async (domain: string, type: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   try {
     const response = await axios.get(`${base_url}/websites/${website_id}/metrics`, {
       headers: { "x-umami-api-key": api_key || "" },
       params: { startAt: parameters.startAt, endAt: Date.now(), type },
     });
-    return response.data; // Ini array [{x: 'ID', y: 1}, ...]
+    return response.data; // Array [{x: '...', y: jumlah}]
   } catch (error) { return []; }
 };
 
@@ -71,7 +70,7 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     combined.websiteStats.visitors.value += getValue(stats?.visitors);
     combined.websiteStats.visits.value += getValue(stats?.visits);
     combined.websiteStats.countries.value += result?.countriesCount || 0;
-    combined.websiteStats.events.value += getValue(stats?.events);
+    combined.websiteStats.events.value += result?.eventsCount || 0;
 
     if (result.pageviews && Array.isArray(result.pageviews)) {
       result.pageviews.forEach((item: any) => {
@@ -91,11 +90,17 @@ export const getAllWebsiteData = async (): Promise<UmamiResponse> => {
       const pv = await getPageViewsByDataRange(w.domain);
       const st = await getWebsiteStats(w.domain);
       const countries = await getWebsiteMetrics(w.domain, "country");
+      const events = await getWebsiteMetrics(w.domain, "event");
+      
+      // Total event adalah jumlah semua y di dalam array metrics event
+      const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
+
       return {
         pageviews: pv?.data?.pageviews || [],
         sessions: pv?.data?.sessions || [],
         websiteStats: st?.data || {},
-        countriesCount: countries.length // Jumlah negara unik
+        countriesCount: countries.length,
+        eventsCount: totalEvents
       };
     })
   );

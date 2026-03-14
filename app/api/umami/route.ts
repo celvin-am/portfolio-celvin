@@ -20,6 +20,9 @@ export const GET = async (req: NextRequest) => {
     const pageViews = await getPageViewsByDataRange(domain);
     const stats = await getWebsiteStats(domain);
     const countries = await getWebsiteMetrics(domain, "country");
+    const events = await getWebsiteMetrics(domain, "event");
+
+    const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
 
     return NextResponse.json(
       {
@@ -29,8 +32,8 @@ export const GET = async (req: NextRequest) => {
           pageviews: { value: stats.data?.pageviews?.value || stats.data?.pageviews || 0 },
           visitors: { value: stats.data?.visitors?.value || stats.data?.visitors || 0 },
           visits: { value: stats.data?.visits?.value || stats.data?.visits || 0 },
-          countries: { value: countries.length || 0 }, // Ambil jumlah array negara
-          events: { value: stats.data?.events?.value || 0 },
+          countries: { value: countries.length || 0 },
+          events: { value: totalEvents || 0 },
         },
       },
       { status: 200 }
