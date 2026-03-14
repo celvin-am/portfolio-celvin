@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getAllWebsiteData, getPageViewsByDataRange, getWebsiteStats, getWebsiteMetrics } from "@/services/umami";
+import { getAllWebsiteData, getPageViewsByDataRange, getWebsiteStats, getWebsiteMetrics, getMonthPrefix } from "@/services/umami";
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +19,18 @@ export const GET = async (req: NextRequest) => {
 
     const pvs: any[] = [];
     const sss: any[] = [];
-    const now = new Date();
+    const jakartaNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta"}));
 
-    // Buat 4 batang bulan (Des, Jan, Feb, Mar)
     for (let i = 3; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
-      const prefix = key.substring(0, 7);
+      const d = new Date(jakartaNow.getFullYear(), jakartaNow.getMonth() - i, 1);
+      const prefix = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const key = `${prefix}-01 00:00:00`;
 
-      const valPv = pv.data.pageviews?.find((p: any) => p.x.startsWith(prefix))?.y || 0;
-      const valSs = pv.data.sessions?.find((s: any) => s.x.startsWith(prefix))?.y || 0;
+      // Filter yang aman dari bug timezone Vercel
+      const valPv = pv.data.pageviews?.filter((p: any) => getMonthPrefix(p.x) === prefix)
+                      .reduce((acc: number, curr: any) => acc + curr.y, 0) || 0;
+      const valSs = pv.data.sessions?.filter((s: any) => getMonthPrefix(s.x) === prefix)
+                      .reduce((acc: number, curr: any) => acc + curr.y, 0) || 0;
 
       pvs.push({ x: key, y: valPv });
       sss.push({ x: key, y: valSs });

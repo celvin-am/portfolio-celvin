@@ -7,11 +7,10 @@ export const UMAMI_ACCOUNT = {
     sessions: "/stats",
   },
   parameters: {
-    // Ambil data 120 hari (4 bulan) agar grafik punya 4 batang ramping
     startAt: Date.now() - (120 * 24 * 60 * 60 * 1000), 
     endAt: Date.now(),      
     unit: "month", 
-    timezone: "Asia/Jakarta", // Paksa timezone Jakarta
+    timezone: "Asia/Jakarta", 
   },
   is_active: true,
   websites: [

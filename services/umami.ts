@@ -13,6 +13,27 @@ const getValue = (obj: any): number => {
   return obj.value ?? 0;
 };
 
+// LOGIC BARU: Konversi UTC dari Umami ke kalender Jakarta biar nggak meleset ke bulan lalu
+export const getMonthPrefix = (x: string) => {
+  try {
+    const safeString = x.includes('T') ? x : x.replace(' ', 'T') + 'Z';
+    const d = new Date(safeString);
+    if (isNaN(d.getTime())) return x.substring(0, 7);
+    
+    // Paksa output format YYYY-MM berdasarkan zona waktu Jakarta
+    const dateString = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(d);
+    
+    return dateString.substring(0, 7);
+  } catch (e) {
+    return x.substring(0, 7);
+  }
+};
+
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
   try {
@@ -53,31 +74,33 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     websiteStats: { pageviews: { value: 0 }, visitors: { value: 0 }, visits: { value: 0 }, countries: { value: 0 }, events: { value: 0 } },
   };
 
-  // 1. Generate placeholder 4 bulan (Des, Jan, Feb, Mar)
-  const now = new Date();
+  // Patokan bulan ini pakai waktu Jakarta, bukan server Vercel
+  const jakartaNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta"}));
+  
   for (let i = 3; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+    const d = new Date(jakartaNow.getFullYear(), jakartaNow.getMonth() - i, 1);
+    const prefix = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const key = `${prefix}-01 00:00:00`; 
     combined.pageviews.push({ x: key, y: 0 });
     combined.sessions.push({ x: key, y: 0 });
   }
 
   allResults.forEach((res) => {
-    // Akumulasi Stats (Page views, Visitors, dll)
     combined.websiteStats.pageviews.value += getValue(res.websiteStats?.pageviews);
     combined.websiteStats.visitors.value += getValue(res.websiteStats?.visitors);
     combined.websiteStats.visits.value += getValue(res.websiteStats?.visits);
     combined.websiteStats.countries.value += res.countriesCount || 0;
     combined.websiteStats.events.value += res.eventsCount || 0;
 
-    // Mapping Pageviews ke keranjang bulan yang tepat
+    // Cocokkan data dengan prefix Jakarta yang udah difilter
     res.pageviews?.forEach((item: any) => {
-      const target = combined.pageviews.find(p => p.x.substring(0, 7) === item.x.substring(0, 7));
+      const prefix = getMonthPrefix(item.x);
+      const target = combined.pageviews.find(p => p.x.startsWith(prefix));
       if (target) target.y += item.y;
     });
-    // Mapping Sessions
     res.sessions?.forEach((item: any) => {
-      const target = combined.sessions.find(s => s.x.substring(0, 7) === item.x.substring(0, 7));
+      const prefix = getMonthPrefix(item.x);
+      const target = combined.sessions.find(s => s.x.startsWith(prefix));
       if (target) target.y += item.y;
     });
   });
