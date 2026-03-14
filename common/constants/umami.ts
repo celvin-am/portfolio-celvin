@@ -7,7 +7,7 @@ export const UMAMI_ACCOUNT = {
     sessions: "/sessions/stats",
   },
   parameters: {
-    startAt: 1717174800000, 
+    startAt: 1741885200000, 
     endAt: 1767190799000, 
     unit: "month",
     timezone: "Asia/Jakarta",
@@ -16,9 +16,9 @@ export const UMAMI_ACCOUNT = {
   websites: [
     {
       // Kita set ke localhost dulu buat testing di komputer kamu
-      domain: "localhost:3000", 
+      domain: "celvinandra.my.id", 
       website_id: process.env.UMAMI_WEBSITE_ID,
-      umami_url: "",
+      umami_url: "https://cloud.umami.is/websites/957f8e50-cea6-43bb-87b0-7b58328c4497",
     },
     // Nanti kalau web kamu udah di-hosting/online, tinggal tambah domain aslimu di bawah sini
   ],
