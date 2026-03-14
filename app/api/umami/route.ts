@@ -23,10 +23,25 @@ export const GET = async (req: NextRequest) => {
     const events = await getWebsiteMetrics(domain, "event");
     const totalEvents = events.reduce((acc: number, curr: any) => acc + curr.y, 0);
 
+    const pvs = [];
+    const ss = [];
+    // Menghasilkan 4 bulan terakhir secara dinamis
+    for (let i = 3; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+        
+        const foundPv = pageViews.data.pageviews?.find((p: any) => p.x.substring(0, 7) === monthStr.substring(0, 7));
+        const foundSs = pageViews.data.sessions?.find((s: any) => s.x.substring(0, 7) === monthStr.substring(0, 7));
+        
+        pvs.push({ x: monthStr, y: foundPv?.y || 0 });
+        ss.push({ x: monthStr, y: foundSs?.y || 0 });
+    }
+
     return NextResponse.json(
       {
-        pageviews: pageViews.data.pageviews || [],
-        sessions: pageViews.data.sessions || [],
+        pageviews: pvs,
+        sessions: ss,
         websiteStats: {
           pageviews: { value: stats.data?.pageviews?.value || stats.data?.pageviews || 0 },
           visitors: { value: stats.data?.visitors?.value || stats.data?.visitors || 0 },

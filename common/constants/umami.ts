@@ -7,7 +7,7 @@ export const UMAMI_ACCOUNT = {
     sessions: "/stats",
   },
   parameters: {
-    // 120 hari = 4 bulan terakhir
+    // 120 hari ke belakang untuk mendapatkan 4 batang bulan di grafik
     startAt: Date.now() - (120 * 24 * 60 * 60 * 1000), 
     endAt: Date.now(),      
     unit: "month", 

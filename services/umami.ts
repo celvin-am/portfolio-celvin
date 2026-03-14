@@ -64,6 +64,15 @@ const mergeData = (allResults: any[]): UmamiResponse => {
     },
   };
 
+  // Logic Placeholder 4 Bulan agar grafik tidak melebar
+  for (let i = 3; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01 00:00:00`;
+    combined.pageviews.push({ x: monthStr, y: 0 });
+    combined.sessions.push({ x: monthStr, y: 0 });
+  }
+
   allResults.forEach((result) => {
     const stats = result?.websiteStats;
     combined.websiteStats.pageviews.value += getValue(stats?.pageviews);
@@ -74,9 +83,15 @@ const mergeData = (allResults: any[]): UmamiResponse => {
 
     if (result.pageviews && Array.isArray(result.pageviews)) {
       result.pageviews.forEach((item: any) => {
-        const existing = combined.pageviews.find((p) => p.x === item.x);
+        const existing = combined.pageviews.find((p) => p.x.substring(0, 7) === item.x.substring(0, 7));
         if (existing) existing.y += item.y;
-        else combined.pageviews.push({ ...item });
+      });
+    }
+
+    if (result.sessions && Array.isArray(result.sessions)) {
+      result.sessions.forEach((item: any) => {
+        const existing = combined.sessions.find((p) => p.x.substring(0, 7) === item.x.substring(0, 7));
+        if (existing) existing.y += item.y;
       });
     }
   });
