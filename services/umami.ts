@@ -9,7 +9,6 @@ const getWebsiteIdByDomain = (domain: string) => {
   return found?.website_id;
 };
 
-// Fungsi Helper untuk format response agar TypeScript gak marah
 const formatResponse = (status: number, data: any, error: string | null = null) => ({
   status,
   data,
@@ -18,7 +17,7 @@ const formatResponse = (status: number, data: any, error: string | null = null) 
 
 export const getPageViewsByDataRange = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return formatResponse(404, {}, `Website not found for ${domain}`);
+  if (!website_id) return formatResponse(404, {}, "Website not found");
 
   const url = `${base_url}/websites/${website_id}${endpoint.page_views}`;
 
@@ -35,14 +34,14 @@ export const getPageViewsByDataRange = async (domain: string) => {
 
 export const getWebsiteStats = async (domain: string) => {
   const website_id = getWebsiteIdByDomain(domain);
-  if (!website_id) return formatResponse(404, {}, `Website not found for ${domain}`);
+  if (!website_id) return formatResponse(404, {}, "Website not found");
 
   const url = `${base_url}/websites/${website_id}${endpoint.sessions}`;
 
   try {
     const response = await axios.get(url, {
       headers: { "x-umami-api-key": api_key || "" },
-      params: { startAt: parameters.startAt, endAt: parameters.endAt },
+      params: { startAt: parameters.startAt, endAt: Date.now() },
     });
     return formatResponse(response.status, response.data);
   } catch (error: any) {
@@ -64,30 +63,20 @@ const mergeData = (allResults: any[]): UmamiResponse => {
   };
 
   allResults.forEach((result) => {
+    // Umami API mengembalikan stats dalam bentuk { pageviews: { value: 10 }, ... }
+    // Pastikan mapping-nya benar sesuai data API
     combined.websiteStats.pageviews.value += result?.websiteStats?.pageviews?.value || 0;
     combined.websiteStats.visitors.value += result?.websiteStats?.visitors?.value || 0;
     combined.websiteStats.visits.value += result?.websiteStats?.visits?.value || 0;
-    combined.websiteStats.events.value += result?.websiteStats?.events?.value || 0;
-    combined.websiteStats.countries.value = Math.max(
-      combined.websiteStats.countries.value,
-      result?.websiteStats?.countries?.value || 0
-    );
-
-    const mergeChart = (target: UmamiDataPoint[], source: UmamiDataPoint[] = []) => {
-      if (!Array.isArray(source)) return;
-      source.forEach((item) => {
-        const existing = target.find((p) => p.x === item.x);
+    
+    if (result.pageviews) {
+      result.pageviews.forEach((item: UmamiDataPoint) => {
+        const existing = combined.pageviews.find((p) => p.x === item.x);
         if (existing) existing.y += item.y;
-        else target.push({ ...item });
+        else combined.pageviews.push({ ...item });
       });
-    };
-
-    mergeChart(combined.pageviews, result?.pageviews);
-    mergeChart(combined.sessions, result?.sessions);
+    }
   });
-
-  combined.pageviews.sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime());
-  combined.sessions.sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime());
 
   return combined;
 };

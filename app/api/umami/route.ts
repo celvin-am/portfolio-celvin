@@ -19,28 +19,15 @@ export const GET = async (req: NextRequest) => {
     const pageViews = await getPageViewsByDataRange(domain);
     const stats = await getWebsiteStats(domain);
 
-    if (pageViews.status >= 400 || stats.status >= 400) {
-      return NextResponse.json(
-        {
-          message:
-            pageViews.error || stats.error || "Failed to fetch Umami data",
-        },
-        { status: pageViews.status || stats.status },
-      );
-    }
-
+    // Kirim response lengkap sesuai kebutuhan frontend Dashboard
     return NextResponse.json(
       {
         ...pageViews.data,
         websiteStats: stats.data,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 };
