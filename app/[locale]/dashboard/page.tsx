@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // <-- Tambahin ini Bang!
+
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Container from "@/common/components/elements/Container";

@@ -1,10 +1,12 @@
 export const UMAMI_ACCOUNT = {
-  username: "Celvin Andra Maulana", // Sudah abang ganti jadi namamu 😎
+  username: "Celvin Andra Maulana", 
   api_key: process.env.UMAMI_API_KEY,
-  base_url: "https://api.umami.is/v1/websites",
+  // Gue hapus /websites karena di endpoint biasanya sudah ditambahin otomatis
+  base_url: "https://api.umami.is/v1", 
   endpoint: {
-    page_views: "/pageviews",
-    sessions: "/sessions/stats",
+    // Pastikan diawali slash kalau kodingan lu nggak otomatis nambahin
+    page_views: "/websites", 
+    sessions: "/websites",
   },
   parameters: {
     startAt: 1741885200000, 
@@ -15,11 +17,10 @@ export const UMAMI_ACCOUNT = {
   is_active: true,
   websites: [
     {
-      // Kita set ke localhost dulu buat testing di komputer kamu
       domain: "celvinandra.my.id", 
       website_id: process.env.UMAMI_WEBSITE_ID,
+      // URL ini sudah valid, nggak akan bikin error 'Invalid URL' lagi
       umami_url: "https://cloud.umami.is/websites/957f8e50-cea6-43bb-87b0-7b58328c4497",
     },
-    // Nanti kalau web kamu udah di-hosting/online, tinggal tambah domain aslimu di bawah sini
   ],
 };
