@@ -1,0 +1,18 @@
+---
+id: 1
+title: 'JetBot AI Automatic Localization System'
+category: 'Robotics'
+stacks: ['Python', 'ROS2', 'Nvidia']
+image: 'https://urkjphkcvgotpdslgiby.supabase.co/storage/v1/object/public/projects/jetbot-ai-ros2.webp'
+---
+
+## How It Works (The Tech Behind It)
+To achieve real-time autonomous localization, this system integrates several advanced algorithms and sensors:
+
+* **LIDAR360**: Acts as the "eyes" of the robot, scanning the surrounding environment in 360 degrees to detect obstacles and measure distances accurately.
+* **Sensor Fusion (Kalman Filter)**: Reduces noise and uncertainty from the sensors, ensuring the robot always knows its precise speed and direction.
+* **Fuzzy Logic**: Implemented to give the robot human-like decision-making capabilities, allowing it to smoothly adjust its speed and avoid obstacles in dynamic environments.
+* **Monte Carlo Localization (AMCL)**: The core algorithm that compares the LIDAR scans with a known map to probabilistically determine the exact coordinates of the robot at any given time.
+
+## Challenges & Achievements
+One of the biggest challenges in this project was integrating hardware components (shown in the picture) with the **ROS2 middleware** and ensuring the Kalman Filter computations could run smoothly in real-time. The final result is a highly responsive robot capable of localizing itself dynamically with a low margin of error.
