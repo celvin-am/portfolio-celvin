@@ -7,7 +7,8 @@ import {
 import { 
   MdSensors, 
   MdOutlineSettingsRemote, 
-  MdFlightTakeoff 
+  MdFlightTakeoff,
+  MdOutlineCloudQueue 
 } from "react-icons/md";
 import {
   SiPython,
@@ -45,6 +46,13 @@ export const STACKS: SkillProps = {
     background: "bg-blue-500",
     color: "text-blue-500",
     isActive: true,
+  },
+  // Fix: Tambahin key "C++" biar sinkron sama inputan lu
+  "C++": {
+    icon: <SiCplusplus size={iconSize} />,
+    background: "bg-blue-700",
+    color: "text-blue-700",
+    isActive: false,
   },
   "C/C++": {
     icon: <SiCplusplus size={iconSize} />,
@@ -124,10 +132,24 @@ export const STACKS: SkillProps = {
     color: "text-rose-600",
     isActive: true,
   },
+  // Fix: Tambahin key "Arduino" biar sinkron sama inputan lu
+  Arduino: { 
+    icon: <SiArduino size={iconSize} />,
+    background: "bg-teal-600",
+    color: "text-teal-600",
+    isActive: false,
+  },
   Microcontrollers: { 
     icon: <SiArduino size={iconSize} />,
     background: "bg-teal-600",
     color: "text-teal-600",
+    isActive: true,
+  },
+  // Fix: Tambahin IoT biar deskripsi IoT lu ada icon-nya
+  IoT: {
+    icon: <MdOutlineCloudQueue size={iconSize} />,
+    background: "bg-emerald-500",
+    color: "text-emerald-500",
     isActive: true,
   },
 
