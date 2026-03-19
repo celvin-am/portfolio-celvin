@@ -94,7 +94,10 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  /* 🛠️ PERBAIKAN DI SINI: Daftarkan plugin Typography */
+  plugins: [
+    require("@tailwindcss/typography"),
+  ],
   darkMode: "class",
 };
 export default config;
