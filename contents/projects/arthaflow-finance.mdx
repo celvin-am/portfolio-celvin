@@ -1,90 +1,53 @@
 Overview
 
-ArthaFlow is a personal finance tracking web application built to help users manage their financial activities in a more structured, practical, and modern way. The platform allows users to record income and expenses, manage wallets and budgets, scan receipts automatically, export financial reports, and monitor spending patterns through interactive dashboards. It was designed to make financial management more accessible, with a clean interface and features that support both daily tracking and longer-term financial planning.
+ArthaFlow Finance is a personal finance tracking web application designed to help users manage income, expenses, wallets, budgets, and financial reports in one integrated platform. The app also supports AI-based receipt scanning and export features for more practical daily financial management.
 
 Tech Stack
 
-Vite — Fast frontend build tool and development server
-React.js — Component-based UI architecture
-TypeScript — Type-safe development across frontend and backend
-Tailwind CSS — Utility-first styling for rapid and responsive UI development
-Express.js — Backend API framework
-Better Auth — Authentication and session management
-Drizzle ORM — Type-safe ORM for database access
-PostgreSQL — Primary relational database
-Supabase Storage — File storage for profile picture uploads
-Google Gemini — AI-powered receipt scanning and structured data extraction
-Recharts — Dashboard data visualization
-PDFKit — PDF export generation
-Vercel — Deployment and hosting platform
+Frontend
+Vite, React.js, TypeScript, Tailwind CSS, React Router, TanStack Query, Axios, Recharts
 
-Features
-Personal Finance Management
+Backend
+Node.js, Express.js, TypeScript, Better Auth, Multer
 
-Users can record and organize income and expense transactions, assign them to wallets and categories, and maintain a clear overview of day-to-day financial activity.
+Database & Services
+PostgreSQL, Drizzle ORM, Supabase Storage, Google Gemini, PDFKit
 
-Wallet & Budget Tracking
+Deployment
+Vercel
 
-The application supports multiple wallets and budgeting features, allowing users to monitor balances, spending limits, and financial distribution across categories.
-
-Interactive Financial Dashboard
-
-A dashboard provides visual summaries of financial data, including expense distribution, balance trends, monthly comparison, and general financial health indicators.
-
-Receipt Scanning with AI
-
-Users can upload receipt images and extract structured financial information automatically using AI, reducing the need for manual transaction entry.
-
-Profile Customization & Settings
-
-The platform includes user preferences such as language, currency, date formatting, and profile picture upload for a more personalized experience.
-
-Data Export
-
-Users can export transaction data in CSV and PDF formats, making it easier to archive, review, or use financial records outside the application.
-
-Responsive Web Experience
-
-The application is built as a web-first platform and structured to support responsive improvements across different screen sizes and devices.
-
+Key Features
+Income and expense transaction management
+Wallet and budget tracking
+Interactive financial dashboard
+AI-powered receipt scanning
+Profile and preference settings
+CSV and PDF export
+Responsive web interface
+Multi-currency support: Indonesian Rupiah (IDR), US Dollar (USD), Euro (EUR), Singapore Dollar (SGD), Japanese Yen (JPY), and Malaysian Ringgit (MYR)
 Challenges & Solutions
-Stabilizing backend initialization
 
-During development, one of the major challenges was backend instability caused by database and authentication initialization during app startup. This was addressed by restructuring database access into a lazy initialization pattern and improving typed database access, which made the API much more stable.
+Backend stability
+The API initially faced instability during startup due to database and authentication initialization. This was resolved by restructuring the database layer with a lazy initialization approach and improving typed database access.
 
-Authentication and session flow
+Authentication flow
+Session handling caused blank states and loading issues in some cases. The solution involved refining the auth flow, stabilizing route registration, and improving unauthenticated fallbacks on the frontend.
 
-Handling authentication reliably across frontend and backend required careful coordination. Session-related loading states and unauthenticated fallbacks were refined to prevent blank screens, infinite loading, and unstable sign-in behavior.
+Profile photo upload
+Uploading profile images in a serverless environment introduced issues around multipart handling and image storage. This was solved by using Multer memory storage, Supabase Storage for file hosting, and storing image URLs instead of base64 data.
 
-File upload in a serverless environment
+Dashboard responsiveness
+Several chart and layout issues appeared when rendering data on different screen sizes. These were addressed by restructuring responsive containers and controlling chart rendering based on layout readiness.
 
-Profile picture upload introduced several issues, especially around multipart handling, storage behavior, and serverless deployment constraints. The final solution used in-memory upload handling with Multer, Supabase Storage for file hosting, and public URL storage instead of base64 image data.
-
-Data visualization responsiveness
-
-Building dashboard charts that work reliably across layouts was another challenge. Several chart rendering issues related to container sizing and responsive layouts were resolved by restructuring chart wrappers and making rendering conditional on data readiness.
-
-Export formatting and financial presentation
-
-Raw financial values from the database initially appeared with excessive decimal formatting and unstructured layout in generated reports. Export generation was improved by formatting values based on user-selected currency settings and redesigning PDF output into a cleaner, more structured report layout.
+Export formatting
+Transaction exports initially showed unformatted values and unstructured layouts. The export feature was improved by formatting amounts based on the user’s selected currency and redesigning the PDF into a cleaner report layout.
 
 Lessons Learned
-Full-stack consistency matters
+Strong coordination between frontend and backend is essential for a stable user experience
+Type-safe architecture makes debugging and refactoring much more reliable
+Serverless environments require careful handling for uploads and initialization logic
+AI-powered features still need validation and cleanup to produce dependable results
+Iterative debugging can lead to meaningful architectural improvements, not just bug fixes
+Project Outcome
 
-A polished user experience depends heavily on consistency between frontend, backend, and deployment behavior. Many issues that looked like UI bugs were actually caused by request formatting, route registration, or API state handling.
-
-Type safety pays off in larger refactors
-
-Using TypeScript and typed database access made it much easier to identify deeper architectural issues during debugging, especially around ORM relations, authentication, and service integration.
-
-Serverless constraints shape implementation choices
-
-Working in a serverless deployment environment requires different decisions compared to a traditional server setup, especially for file uploads, initialization flow, and external service integration.
-
-AI features still require strong validation
-
-Receipt scanning through AI significantly improved usability, but structured validation and cleanup logic were still necessary to make the extracted output reliable enough for application use.
-
-Iterative debugging improves architecture
-
-Many fixes made during development were not just bug patches but architectural improvements. Solving issues in authentication, storage, export generation, and dashboard rendering ultimately made the application more maintainable and production-ready.
+ArthaFlow evolved into a more stable and production-ready application after resolving issues across authentication, dashboard rendering, file upload, export generation, and API structure. The project strengthened both my full-stack debugging skills and my understanding of building practical financial tools.
