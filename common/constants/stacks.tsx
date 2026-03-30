@@ -26,6 +26,12 @@ import {
   SiTailwindcss,
   SiRaspberrypi,
   SiNvidia,
+  SiVite, 
+  SiReact, 
+  SiTypescript, 
+  SiPostgresql, 
+  SiExpress,
+  SiDrizzle
 } from "react-icons/si";
 
 export type SkillProps = {
@@ -198,4 +204,42 @@ export const STACKS: SkillProps = {
     color: "text-emerald-500",
     isActive: true,
   },
+
+  Vite: {
+    icon: <SiVite size={iconSize} />,
+    background: "bg-purple-500",
+    color: "text-purple-500",
+    isActive: false,
+  },
+  React: {
+    icon: <SiReact size={iconSize} />,
+    background: "bg-blue-400",
+    color: "text-blue-400",
+    isActive: true,
+  },
+  TypeScript: {
+    icon: <SiTypescript size={iconSize} />,
+    background: "bg-blue-600",
+    color: "text-blue-600",
+    isActive: false,
+  },
+  "Drizzle ORM": {
+    icon: <SiDrizzle size={iconSize} />,
+    background: "bg-lime-400",
+    color: "text-lime-400",
+    isActive: false,
+  },
+  PostgreSQL: {
+    icon: <SiPostgresql size={iconSize} />,
+    background: "bg-blue-800",
+    color: "text-blue-800",
+    isActive: false,
+  },
+  Express: {
+    icon: <SiExpress size={iconSize} />,
+    background: "bg-neutral-500",
+    color: "text-neutral-500",
+    isActive: true,
+  },
+
 };
