@@ -1,53 +1,85 @@
-Overview
+---
+id: 2
+title: 'ArthaFlow Finance'
+category: 'Full-Stack Web App'
+stacks: ['Vite', 'React.js', 'TypeScript', 'Tailwind CSS', 'Express.js', 'PostgreSQL', 'Drizzle ORM', 'Better Auth', 'Supabase Storage', 'Google Gemini', 'Vercel']
+image: 'https://urkjphkcvgotpdslgiby.supabase.co/storage/v1/object/public/projects/arthaflow-finance.webp'
+---
 
-ArthaFlow Finance is a personal finance tracking web application designed to help users manage income, expenses, wallets, budgets, and financial reports in one integrated platform. The app also supports AI-based receipt scanning and export features for more practical daily financial management.
+## Overview
+ArthaFlow Finance is a personal finance tracking web application built to help users manage income, expenses, wallets, budgets, and financial reports in one integrated platform. The application also includes AI-powered receipt scanning, profile customization, export tools, and multi-currency support to make daily financial management more practical and efficient.
 
-Tech Stack
+---
 
-Frontend
-Vite, React.js, TypeScript, Tailwind CSS, React Router, TanStack Query, Axios, Recharts
+## Key Features
+- Record and manage **income and expense transactions**
+- Organize finances across multiple **wallets**
+- Track monthly spending with **budget management**
+- Monitor financial activity through an **interactive dashboard**
+- Scan receipts automatically using **AI-powered extraction**
+- Export transaction history in **CSV** and **PDF** formats
+- Customize profile and financial preferences
+- Support multiple currencies:
+  - Indonesian Rupiah (**IDR**)
+  - US Dollar (**USD**)
+  - Euro (**EUR**)
+  - Singapore Dollar (**SGD**)
+  - Japanese Yen (**JPY**)
+  - Malaysian Ringgit (**MYR**)
 
-Backend
-Node.js, Express.js, TypeScript, Better Auth, Multer
+---
 
-Database & Services
-PostgreSQL, Drizzle ORM, Supabase Storage, Google Gemini, PDFKit
+## How It Works (The Tech Behind It)
+To support a complete finance tracking workflow, ArthaFlow integrates several modern web technologies:
 
-Deployment
-Vercel
+- **Vite + React.js**  
+  Used to build a fast, component-based frontend with a responsive user interface.
 
-Key Features
-Income and expense transaction management
-Wallet and budget tracking
-Interactive financial dashboard
-AI-powered receipt scanning
-Profile and preference settings
-CSV and PDF export
-Responsive web interface
-Multi-currency support: Indonesian Rupiah (IDR), US Dollar (USD), Euro (EUR), Singapore Dollar (SGD), Japanese Yen (JPY), and Malaysian Ringgit (MYR)
-Challenges & Solutions
+- **TypeScript**  
+  Ensures safer and more maintainable development across both frontend and backend.
 
-Backend stability
-The API initially faced instability during startup due to database and authentication initialization. This was resolved by restructuring the database layer with a lazy initialization approach and improving typed database access.
+- **Express.js**  
+  Powers the backend API for handling transactions, wallets, budgets, settings, export, and authentication flows.
 
-Authentication flow
-Session handling caused blank states and loading issues in some cases. The solution involved refining the auth flow, stabilizing route registration, and improving unauthenticated fallbacks on the frontend.
+- **Better Auth**  
+  Manages authentication, session handling, and protected routes.
 
-Profile photo upload
-Uploading profile images in a serverless environment introduced issues around multipart handling and image storage. This was solved by using Multer memory storage, Supabase Storage for file hosting, and storing image URLs instead of base64 data.
+- **PostgreSQL + Drizzle ORM**  
+  Provide structured data storage with type-safe database queries and schema management.
 
-Dashboard responsiveness
-Several chart and layout issues appeared when rendering data on different screen sizes. These were addressed by restructuring responsive containers and controlling chart rendering based on layout readiness.
+- **Supabase Storage**  
+  Handles file storage for user profile images in a serverless-friendly way.
 
-Export formatting
-Transaction exports initially showed unformatted values and unstructured layouts. The export feature was improved by formatting amounts based on the user’s selected currency and redesigning the PDF into a cleaner report layout.
+- **Google Gemini**  
+  Enables AI-based receipt scanning to extract structured transaction data from uploaded receipt images.
 
-Lessons Learned
-Strong coordination between frontend and backend is essential for a stable user experience
-Type-safe architecture makes debugging and refactoring much more reliable
-Serverless environments require careful handling for uploads and initialization logic
-AI-powered features still need validation and cleanup to produce dependable results
-Iterative debugging can lead to meaningful architectural improvements, not just bug fixes
-Project Outcome
+- **PDFKit**  
+  Generates PDF financial reports with formatted transaction summaries.
 
-ArthaFlow evolved into a more stable and production-ready application after resolving issues across authentication, dashboard rendering, file upload, export generation, and API structure. The project strengthened both my full-stack debugging skills and my understanding of building practical financial tools.
+- **Recharts**  
+  Used to visualize spending patterns, balance trends, and expense distribution in the dashboard.
+
+---
+
+## Challenges & Improvements
+Some of the main technical challenges in this project included:
+
+- **Backend stability**  
+  The API initially faced instability during startup because of database and authentication initialization. This was improved by restructuring the database layer with a lazy initialization approach and typed database access.
+
+- **Authentication flow**  
+  Session handling caused blank states and loading issues in some cases. This was fixed by refining auth flow, improving fallback handling, and stabilizing protected route registration.
+
+- **Profile photo upload**  
+  Uploading images in a serverless deployment introduced multipart and storage issues. The final solution used Multer memory storage, Supabase Storage, and public image URLs instead of base64 storage.
+
+- **Dashboard responsiveness**  
+  Chart rendering and layout responsiveness required additional refinement to make the dashboard more stable across different screen sizes.
+
+- **Export formatting**  
+  CSV and PDF exports initially displayed raw numeric values and less structured layouts. The export system was improved with currency-aware formatting and cleaner report presentation.
+
+---
+
+## Outcome
+ArthaFlow Finance evolved into a more stable and production-ready full-stack web application after resolving issues across authentication, dashboard rendering, upload handling, export generation, and API architecture. This project strengthened my skills in full-stack development, debugging, API integration, financial data presentation, and real-world problem solving.
